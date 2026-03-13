@@ -1,4 +1,4 @@
-import type { CryptoApisHttpClient, RequestResult } from "@cryptoapis-io/mcp-shared";
+import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { XrpUtilsToolSchema, type XrpUtilsInput } from "./schema.js";
 import { handleValidateAddress } from "./validate-address/index.js";
@@ -27,7 +27,7 @@ export const xrpUtilsTool: McpToolDef<typeof XrpUtilsToolSchema> = {
     },
     inputSchema: XrpUtilsToolSchema,
     handler:
-        (client: CryptoApisHttpClient) =>
+        (client: CryptoApisHttpClient, logger: McpLogger) =>
         async (input: XrpUtilsInput) => {
             let result: RequestResult<unknown>;
 
@@ -35,25 +35,41 @@ export const xrpUtilsTool: McpToolDef<typeof XrpUtilsToolSchema> = {
 
             switch (input.action) {
                 case "validate-address":
+                    if (!input.address) throw new Error("address is required for validate-address");
                     result = await handleValidateAddress(client, {
                         ...baseParams,
-                        address: input.address!,
+                        address: input.address,
                     });
                     break;
                 case "decode-x-address":
+                    if (!input.xAddress) throw new Error("xAddress is required for decode-x-address");
                     result = await handleDecodeXAddress(client, {
                         ...baseParams,
-                        xAddress: input.xAddress!,
+                        xAddress: input.xAddress,
                     });
                     break;
                 case "encode-x-address":
+                    if (!input.classicAddress) throw new Error("classicAddress is required for encode-x-address");
+                    if (input.addressTag == null) throw new Error("addressTag is required for encode-x-address");
                     result = await handleEncodeXAddress(client, {
                         ...baseParams,
-                        classicAddress: input.classicAddress!,
-                        addressTag: input.addressTag!,
+                        classicAddress: input.classicAddress,
+                        addressTag: input.addressTag,
                     });
                     break;
+                default:
+                    throw new Error(`Unknown action: ${(input as any).action}`);
             }
+
+            logger.logInfo({
+                tool: "xrp_utils",
+                action: input.action,
+                network: input.network,
+                creditsConsumed: result.creditsConsumed,
+                creditsAvailable: result.creditsAvailable,
+                responseTime: result.responseTime,
+                throughputUsage: result.throughputUsage,
+            });
 
             return {
                 content: [
@@ -61,7 +77,7 @@ export const xrpUtilsTool: McpToolDef<typeof XrpUtilsToolSchema> = {
                         type: "text",
                         text: JSON.stringify({
                             ...(result.data as object),
-                        creditsConsumed: result.creditsConsumed,
+                            creditsConsumed: result.creditsConsumed,
                             creditsAvailable: result.creditsAvailable,
                             responseTime: result.responseTime,
                             throughputUsage: result.throughputUsage,

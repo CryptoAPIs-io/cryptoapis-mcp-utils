@@ -15,18 +15,7 @@ export const EvmUtilsToolSchema = z
         address: z.string().min(1).optional().describe("Address (required for validate-address)"),
         rawTransactionHex: z.string().min(1).optional().describe("Raw transaction hex (required for decode-raw-transaction)"),
     })
-    .merge(RequestMetadataSchema)
-    .refine(
-        (data) => {
-            if (data.action === "validate-address") return data.address != null && data.address !== "";
-            if (data.action === "decode-raw-transaction") return data.rawTransactionHex != null && data.rawTransactionHex !== "";
-            return true;
-        },
-        {
-            message: "address required for validate-address; rawTransactionHex required for decode-raw-transaction",
-            path: ["action"],
-        }
-    );
+    .merge(RequestMetadataSchema);
 
 export type EvmUtilsInput = z.infer<typeof EvmUtilsToolSchema>;
 

@@ -17,19 +17,7 @@ export const UtxoUtilsToolSchema = z
         address: z.string().min(1).optional().describe("Address (required for validate-address and convert-bitcoin-cash-address)"),
         rawTransactionHex: z.string().min(1).optional().describe("Raw transaction hex (required for decode-raw-transaction)"),
     })
-    .merge(RequestMetadataSchema)
-    .refine(
-        (data) => {
-            if (data.action === "validate-address") return data.address != null && data.address !== "" && data.blockchain != null;
-            if (data.action === "decode-raw-transaction") return data.rawTransactionHex != null && data.rawTransactionHex !== "" && data.blockchain != null;
-            if (data.action === "convert-bitcoin-cash-address") return data.address != null && data.address !== "";
-            return true;
-        },
-        {
-            message: "validate-address requires address and blockchain; decode-raw-transaction requires rawTransactionHex and blockchain; convert-bitcoin-cash-address requires address and network (Bitcoin Cash only, no blockchain)",
-            path: ["action"],
-        }
-    );
+    .merge(RequestMetadataSchema);
 
 export type UtxoUtilsInput = z.infer<typeof UtxoUtilsToolSchema>;
 

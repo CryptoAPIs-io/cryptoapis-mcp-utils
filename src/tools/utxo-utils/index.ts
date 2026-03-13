@@ -1,4 +1,4 @@
-import type { CryptoApisHttpClient, RequestResult } from "@cryptoapis-io/mcp-shared";
+import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import { UTXO_BLOCKCHAIN_NETWORK_DESCRIPTION } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { UtxoUtilsToolSchema, type UtxoUtilsInput } from "./schema.js";
@@ -26,35 +26,53 @@ ${UTXO_BLOCKCHAIN_NETWORK_DESCRIPTION}`,
     },
     inputSchema: UtxoUtilsToolSchema,
     handler:
-        (client: CryptoApisHttpClient) =>
+        (client: CryptoApisHttpClient, logger: McpLogger) =>
         async (input: UtxoUtilsInput) => {
             let result: RequestResult<unknown>;
 
             switch (input.action) {
                 case "validate-address":
+                    if (!input.blockchain) throw new Error("blockchain is required for validate-address");
+                    if (!input.address) throw new Error("address is required for validate-address");
                     result = await handleValidateAddress(client, {
-                        blockchain: input.blockchain!,
+                        blockchain: input.blockchain,
                         network: input.network,
-                        address: input.address!,
+                        address: input.address,
                         context: input.context,
                     });
                     break;
                 case "decode-raw-transaction":
+                    if (!input.blockchain) throw new Error("blockchain is required for decode-raw-transaction");
+                    if (!input.rawTransactionHex) throw new Error("rawTransactionHex is required for decode-raw-transaction");
                     result = await handleDecodeRawTransaction(client, {
-                        blockchain: input.blockchain!,
+                        blockchain: input.blockchain,
                         network: input.network,
-                        rawTransactionHex: input.rawTransactionHex!,
+                        rawTransactionHex: input.rawTransactionHex,
                         context: input.context,
                     });
                     break;
                 case "convert-bitcoin-cash-address":
+                    if (!input.address) throw new Error("address is required for convert-bitcoin-cash-address");
                     result = await handleConvertBitcoinCashAddress(client, {
                         network: input.network,
-                        address: input.address!,
+                        address: input.address,
                         context: input.context,
                     });
                     break;
+                default:
+                    throw new Error(`Unknown action: ${(input as any).action}`);
             }
+
+            logger.logInfo({
+                tool: "utxo_utils",
+                action: input.action,
+                blockchain: input.blockchain,
+                network: input.network,
+                creditsConsumed: result.creditsConsumed,
+                creditsAvailable: result.creditsAvailable,
+                responseTime: result.responseTime,
+                throughputUsage: result.throughputUsage,
+            });
 
             return {
                 content: [

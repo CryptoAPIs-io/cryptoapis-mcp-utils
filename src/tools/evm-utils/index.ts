@@ -1,4 +1,4 @@
-import type { CryptoApisHttpClient, RequestResult } from "@cryptoapis-io/mcp-shared";
+import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { EvmUtilsToolSchema, type EvmUtilsInput } from "./schema.js";
 import { handleValidateAddress } from "./validate-address/index.js";
@@ -27,7 +27,7 @@ export const evmUtilsTool: McpToolDef<typeof EvmUtilsToolSchema> = {
     },
     inputSchema: EvmUtilsToolSchema,
     handler:
-        (client: CryptoApisHttpClient) =>
+        (client: CryptoApisHttpClient, logger: McpLogger) =>
         async (input: EvmUtilsInput) => {
             let result: RequestResult<unknown>;
 
@@ -39,18 +39,33 @@ export const evmUtilsTool: McpToolDef<typeof EvmUtilsToolSchema> = {
 
             switch (input.action) {
                 case "validate-address":
+                    if (!input.address) throw new Error("address is required for validate-address");
                     result = await handleValidateAddress(client, {
                         ...baseParams,
-                        address: input.address!,
+                        address: input.address,
                     });
                     break;
                 case "decode-raw-transaction":
+                    if (!input.rawTransactionHex) throw new Error("rawTransactionHex is required for decode-raw-transaction");
                     result = await handleDecodeRawTransaction(client, {
                         ...baseParams,
-                        rawTransactionHex: input.rawTransactionHex!,
+                        rawTransactionHex: input.rawTransactionHex,
                     });
                     break;
+                default:
+                    throw new Error(`Unknown action: ${(input as any).action}`);
             }
+
+            logger.logInfo({
+                tool: "evm_utils",
+                action: input.action,
+                blockchain: input.blockchain,
+                network: input.network,
+                creditsConsumed: result.creditsConsumed,
+                creditsAvailable: result.creditsAvailable,
+                responseTime: result.responseTime,
+                throughputUsage: result.throughputUsage,
+            });
 
             return {
                 content: [
@@ -58,7 +73,7 @@ export const evmUtilsTool: McpToolDef<typeof EvmUtilsToolSchema> = {
                         type: "text",
                         text: JSON.stringify({
                             ...(result.data as object),
-                        creditsConsumed: result.creditsConsumed,
+                            creditsConsumed: result.creditsConsumed,
                             creditsAvailable: result.creditsAvailable,
                             responseTime: result.responseTime,
                             throughputUsage: result.throughputUsage,

@@ -17,20 +17,7 @@ export const XrpUtilsToolSchema = z
         classicAddress: z.string().min(1).optional().describe("Classic address (required for encode-x-address)"),
         addressTag: z.number().int().min(0).optional().describe("Destination tag (required for encode-x-address)"),
     })
-    .merge(RequestMetadataSchema)
-    .refine(
-        (data) => {
-            if (data.action === "validate-address") return data.address != null && data.address !== "";
-            if (data.action === "decode-x-address") return data.xAddress != null && data.xAddress !== "";
-            if (data.action === "encode-x-address") return data.classicAddress != null && data.classicAddress !== "" && data.addressTag != null;
-            return true;
-        },
-        {
-            message:
-                "address required for validate-address; xAddress for decode-x-address; classicAddress and addressTag for encode-x-address",
-            path: ["action"],
-        }
-    );
+    .merge(RequestMetadataSchema);
 
 export type XrpUtilsInput = z.infer<typeof XrpUtilsToolSchema>;
 

@@ -1,6 +1,6 @@
 {
   "name": "@cryptoapis-io/mcp-utils",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "MCP server for address derivation and encoding utilities across multiple blockchains via Crypto APIs",
   "license": "MIT",
   "author": "Crypto APIs, Inc.",

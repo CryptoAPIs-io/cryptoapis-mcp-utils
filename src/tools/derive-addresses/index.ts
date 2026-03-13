@@ -1,4 +1,4 @@
-import type { CryptoApisHttpClient, RequestResult } from "@cryptoapis-io/mcp-shared";
+import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { DeriveAddressesToolSchema, type DeriveAddressesInput } from "./schema.js";
 import { deriveAddresses } from "../../api/derive-addresses/index.js";
@@ -13,7 +13,7 @@ Derives up to 10 addresses. By default creates receiving/deposit address; set is
     credits: deriveAddressesCredits,
     inputSchema: DeriveAddressesToolSchema,
     handler:
-        (client: CryptoApisHttpClient) =>
+        (client: CryptoApisHttpClient, logger: McpLogger) =>
         async (input: DeriveAddressesInput): Promise<{ content: Array<{ type: "text"; text: string }> }> => {
             const result: RequestResult<unknown> = await deriveAddresses(client, {
                 blockchain: input.blockchain,
@@ -24,6 +24,16 @@ Derives up to 10 addresses. By default creates receiving/deposit address; set is
                 isChange: input.isChange,
                 startIndex: input.startIndex,
                 context: input.context,
+            });
+
+            logger.logInfo({
+                tool: "derive_addresses",
+                blockchain: input.blockchain,
+                network: input.network,
+                creditsConsumed: result.creditsConsumed,
+                creditsAvailable: result.creditsAvailable,
+                responseTime: result.responseTime,
+                throughputUsage: result.throughputUsage,
             });
 
             return {
