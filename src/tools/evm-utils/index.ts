@@ -1,3 +1,4 @@
+import { READ_ONLY_TOOL } from "@cryptoapis-io/mcp-shared";
 import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { EvmUtilsToolSchema, type EvmUtilsInput } from "./schema.js";
@@ -20,6 +21,8 @@ Blockchain → Networks:
 
 export const evmUtilsTool: McpToolDef<typeof EvmUtilsToolSchema> = {
     name: "evm_utils",
+    title: "EVM address and transaction utilities",
+    annotations: READ_ONLY_TOOL,
     description: EVM_UTILS_DESCRIPTION,
     credits: {
         "validate-address": validateAddressCredits,

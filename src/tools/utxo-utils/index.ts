@@ -1,3 +1,4 @@
+import { READ_ONLY_TOOL } from "@cryptoapis-io/mcp-shared";
 import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import { UTXO_BLOCKCHAIN_NETWORK_DESCRIPTION } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
@@ -11,6 +12,8 @@ import { credits as convertBitcoinCashAddressCredits } from "./convert-bitcoin-c
 
 export const utxoUtilsTool: McpToolDef<typeof UtxoUtilsToolSchema> = {
     name: "utxo_utils",
+    title: "UTXO address and transaction utilities",
+    annotations: READ_ONLY_TOOL,
     description: `UTXO utils (Utils product): validate address, decode raw transaction hex, convert Bitcoin Cash address.
 
 Actions:

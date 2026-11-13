@@ -1,3 +1,4 @@
+import { READ_ONLY_TOOL } from "@cryptoapis-io/mcp-shared";
 import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { XrpUtilsToolSchema, type XrpUtilsInput } from "./schema.js";
@@ -19,6 +20,8 @@ Networks: mainnet, testnet`;
 
 export const xrpUtilsTool: McpToolDef<typeof XrpUtilsToolSchema> = {
     name: "xrp_utils",
+    title: "XRP address utilities",
+    annotations: READ_ONLY_TOOL,
     description: XRP_UTILS_DESCRIPTION,
     credits: {
         "validate-address": validateAddressCredits,

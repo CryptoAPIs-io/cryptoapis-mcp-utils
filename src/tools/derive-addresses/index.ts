@@ -1,3 +1,4 @@
+import { READ_ONLY_TOOL } from "@cryptoapis-io/mcp-shared";
 import type { CryptoApisHttpClient, McpLogger, RequestResult } from "@cryptoapis-io/mcp-shared";
 import type { McpToolDef } from "../types.js";
 import { DeriveAddressesToolSchema, type DeriveAddressesInput } from "./schema.js";
@@ -6,6 +7,8 @@ import { credits as deriveAddressesCredits } from "./credits.js";
 
 export const deriveAddressesTool: McpToolDef<typeof DeriveAddressesToolSchema> = {
     name: "derive_addresses",
+    title: "Derive addresses from an extended public key",
+    annotations: READ_ONLY_TOOL,
     description: `Utils: derive HD wallet (xPub, yPub, zPub) change or receiving addresses without syncing.
 
 GET /utils/{blockchain}/{network}/xpubs/{extendedPublicKey}/derive-addresses
